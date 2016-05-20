@@ -14,7 +14,10 @@ function Get-TargetResource
         [string]$Name,
         
         [parameter(Mandatory)]
-        [string]$ClusterName
+        [string]$ClusterName,
+        
+        [parameter(Mandatory)]
+        [string]$GroupType
     )
     
     #Make sure Failover Cluster Module is imported
@@ -61,7 +64,7 @@ function Set-TargetResource
         [parameter(Mandatory)]
         [string]$ClusterName,
         
-        [Parameter(Mandatory)]
+        [parameter(Mandatory)]
         [string]$GroupType
     )
     
@@ -121,7 +124,7 @@ function Test-TargetResource
         [parameter(Mandatory)]
         [string]$ClusterName,
         
-        [Parameter(Mandatory)]
+        [parameter(Mandatory)]
         [string]$GroupType
     )
     
@@ -138,7 +141,7 @@ function Test-TargetResource
     if (($Ensure -eq "Present" -and $ClusterGroup -eq $null) -or ($Ensure -eq "Absent" -and $ClusterGroup -ne $null)) 
     {
         $isDesiredState = $false
-        Write-Verbose -Message "The Ensure state for Cluster Group `"$($ClusterGroup.Name)`" does not match the desired state. "
+        Write-Verbose -Message "The Ensure state for Cluster Group `"$($Name)`" does not match the desired state. "
     }
     
     if ($Ensure -eq 'Present' -and $ClusterGroup -ne $null) 
@@ -149,4 +152,5 @@ function Test-TargetResource
             Write-Verbose -Message "The Group Type state for Cluster Group `"$($ClusterGroup.GroupType)`" does not match the desired state. "
         }
     }
+    $isDesiredState
 }
