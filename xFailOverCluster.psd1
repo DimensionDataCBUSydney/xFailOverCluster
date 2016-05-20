@@ -33,6 +33,8 @@ PrivateData = @{
         ReleaseNotes = '* Added xClusterNetwork resource 
 * Added xClusterDisk resource
 * Added xClusterPreferredOwner resource
+* Added xClusterGroup resource
+* Added xClusterResource resource
 
 '
 
