@@ -1,0 +1,9 @@
+
+[ClassVersion("1.0.0.0"), FriendlyName("xClusterGroup")]
+class MSFT_xClusterGroup : OMI_BaseResource
+{
+    [key, Description("Name of the Cluster Group")] string Name[];
+    [Key, Description("Name of the Cluster)] String ClusterName;
+    [Required, ValueMap {"AvailableStorage", "Cluster", "ClusterSharedVolume", "ClusterStoragePool", "DhcpServer", "Dtc", "FileServer", "GenericApplication", "GenericScript", "GenericService", "IScsiNameService", "IScsiTarget", "Msmq", "ScaleoutFileServer", "StandAloneDfs", "TaskScheduler", "Temporary", "TsSessionBroker", "Unknown", "VirtualMachine", "VMReplicaBroker", "Wins"},Values{"AvailableStorage", "Cluster", "ClusterSharedVolume", "ClusterStoragePool", "DhcpServer", "Dtc", "FileServer", "GenericApplication", "GenericScript", "GenericService", "IScsiNameService", "IScsiTarget", "Msmq", "ScaleoutFileServer", "StandAloneDfs", "TaskScheduler", "Temporary", "TsSessionBroker", "Unknown", "VirtualMachine", "VMReplicaBroker", "Wins"}] String GroupType;
+    [Write,ValueMap{"Present", "Absent"},Values{"Present", "Absent"}] string Ensure;
+};
