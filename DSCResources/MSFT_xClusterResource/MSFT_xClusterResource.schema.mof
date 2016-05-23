@@ -1,3 +1,9 @@
+[ClassVersion("1.0.0")]
+class MSFT_xClusterParameter
+{
+    [Write] string Name;
+    [Write] string Value;
+};
 
 [ClassVersion("1.0.0.0"), FriendlyName("xClusterResource")]
 class MSFT_xClusterResource : OMI_BaseResource
@@ -7,4 +13,6 @@ class MSFT_xClusterResource : OMI_BaseResource
     [Key, Description("Name of the Cluster Group")] String ClusterGroupName;
     [Required, ValueMap{"DFS Replicated Folder", "DHCP Service", "Disjoint IPv4 Address", "Disjoint IPv6 Address", "Distributed File System", "Distributed Network Name", "Distributed ransaction Coordinator", "File Server", "File Share Witness", "Generic Application", "Generic Script", "Generic Service", "IP Address", "IPv6 Address", "IPv6 unnel Address", "iSCSI Target Server", "Microsoft iSNS", "MSMQ", "MSMQTriggers", "Nat", "Network File System", "Network Name", "Physical Disk", "Provider Address", "Scale Out File Server", "Storage Pool", "Task Scheduler", "Virtual Machine", "Virtual Machine Configuration", "Virtual Machine Replication Broker", "WINS Service"}, Values{"DFS Replicated Folder", "DHCP Service", "Disjoint IPv4 Address", "Disjoint IPv6 Address", "Distributed File System", "Distributed Network Name", "Distributed ransaction Coordinator", "File Server", "File Share Witness", "Generic Application", "Generic Script", "Generic Service", "IP Address", "IPv6 Address", "IPv6 unnel Address", "iSCSI Target Server", "Microsoft iSNS", "MSMQ", "MSMQTriggers", "Nat", "Network File System", "Network Name", "Physical Disk", "Provider Address", "Scale Out File Server", "Storage Pool", "Task Scheduler", "Virtual Machine", "Virtual Machine Configuration", "Virtual Machine Replication Broker", "WINS Service"}] String ClusterResourceType;
     [Write,ValueMap{"Present", "Absent"},Values{"Present", "Absent"}] string Ensure;
+    [Write, EmbeddedInstance("MSFT_xClusterParameter")] string ClusterResourceParam[];
+    [Write,ValueMap{"Online","Offline"},Values{"Online","Offline"}] string State;
 };
