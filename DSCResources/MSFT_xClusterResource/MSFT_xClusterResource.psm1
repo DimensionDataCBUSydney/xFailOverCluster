@@ -14,7 +14,13 @@ function Get-TargetResource
         [string]$Name,
         
         [parameter(Mandatory)]
-        [string]$ClusterName
+        [string]$ClusterName,
+        
+        [parameter(Mandatory)]
+        [string]$ClusterGroupName,
+        
+        [parameter(Mandatory)]
+        [string]$ClusterResourceType
     )
     
     #Make sure Failover Cluster Module is imported
@@ -23,7 +29,7 @@ function Get-TargetResource
         Import-Module -Name FailoverClusters
     }
     
-    $ClusterResource = Get-ClusterResource -Name $Name -Cluster $ClusterName
+    $ClusterResource = Get-ClusterResource -Name $Name -Cluster $ClusterName -ErrorAction SilentlyContinue
     $ClusterResourceParam = Get-ClusterParameter -InputObject $ClusterResource
     if ($null -ne $ClusterResource)
     {
@@ -83,7 +89,7 @@ function Set-TargetResource
         Import-Module -Name FailoverClusters
     }
     
-    $ClusterResource = Get-ClusterResource -Name $Name -Cluster $ClusterName
+    $ClusterResource = Get-ClusterResource -Name $Name -Cluster $ClusterName -ErrorAction SilentlyContinue
     if ($Ensure -eq "Present") 
     {
         if ($ClusterResource -ne $null)
@@ -117,13 +123,12 @@ function Set-TargetResource
                 #Remove previous as Cluster Resource cannot have same name in different role
                 Remove-ClusterResource -Name $Name -Force
                 #Create a new Resource in the target group
-                $ClusterResourceType = $ClusterResourceType
                 $ClusterResource = Add-ClusterResource -Name $Name -Group $ClusterGroupName -ResourceType $ClusterResourceType -Cluster $ClusterName
                 foreach ($param in $ClusterResourceParam)
                 {
                     Set-ClusterParameter -Name $param.Name -value $param.Value -InputObject $ClusterResource
                 }
-                if ($Statue -eq "Online")
+                if ($State -eq "Online")
                 {
                     Start-ClusterResource -InputObject $ClusterResource
                 }
@@ -133,13 +138,12 @@ function Set-TargetResource
                 #Remove previous as Cluster Resource cannot have same name in different role
                 Remove-ClusterResource -Name $Name -Force
                 #Create a new Resource in the target group
-                $ClusterResourceType = $ClusterResourceType
                 $ClusterResource = Add-ClusterResource -Name $Name -Group $ClusterGroupName -ResourceType $ClusterResourceType -Cluster $ClusterName
                 foreach ($param in $ClusterResourceParam)
                 {
                     Set-ClusterParameter -Name $param.Name -value $param.Value -InputObject $ClusterResource
                 }
-                if ($Statue -eq "Online")
+                if ($State -eq "Online")
                 {
                     Start-ClusterResource -InputObject $ClusterResource
                 }
@@ -154,7 +158,7 @@ function Set-TargetResource
             {
                 Set-ClusterParameter -Name $param.Name -value $param.Value -InputObject $ClusterResource
             }
-            if ($Statue -eq "Online")
+            if ($State -eq "Online")
             {
                 Start-ClusterResource -InputObject $ClusterResource
             }
@@ -206,7 +210,7 @@ function Test-TargetResource
         Import-Module -Name FailoverClusters
     }
     
-    $ClusterResource = Get-ClusterResource -Name $Name -Cluster $ClusterName
+    $ClusterResource = Get-ClusterResource -Name $Name -Cluster $ClusterName -ErrorAction SilentlyContinue
     
     $isDesiredState = $true
     
@@ -247,7 +251,7 @@ function Test-TargetResource
     if (($Ensure -eq "Present" -and $ClusterResource -eq $null) -or ($Ensure -eq "Absent" -and $ClusterResource -ne $null)) 
     {
         $isDesiredState = $false
-        Write-Verbose -Message "The Ensure state for Cluster Group `"$($Name)`" does not match the desired state. "
+        Write-Verbose -Message "The Ensure state for Cluster Resource `"$($Name)`" does not match the desired state. "
     }
     
     $isDesiredState
