@@ -30,7 +30,6 @@ function Get-TargetResource
     }
     
     $ClusterResource = Get-ClusterResource -Name $Name -Cluster $ClusterName -ErrorAction SilentlyContinue
-    $ClusterResourceParam = Get-ClusterParameter -InputObject $ClusterResource
     if ($null -ne $ClusterResource)
     {
         $ReturnValue = @{
@@ -39,7 +38,6 @@ function Get-TargetResource
             ClusterGroupName = $ClusterResource.OwnerGroup.Name
             ClusterResourceType = $ClusterResource.ResourceType.Name
             Ensure = 'Present'
-            ClusterResourceParam = @(ConvertTo-CimClusterParam -InputObject $ClusterResourceParam)
             State = $ClusterResource.State
         }
     }
@@ -51,7 +49,6 @@ function Get-TargetResource
             ClusterGroupName = $null
             ClusterResourceType = $null
             Ensure = 'Absent'
-            ClusterResourceParam = $null
             State = $null
         }
     }
@@ -76,8 +73,6 @@ function Set-TargetResource
         [parameter(Mandatory)]
         [string]$ClusterResourceType,
         
-        [Microsoft.Management.Infrastructure.CimInstance[]]$ClusterResourceParam,
-        
         [string]$State = "Online",
         
         [string]$Ensure = "Present"
@@ -94,17 +89,6 @@ function Set-TargetResource
     {
         if ($ClusterResource -ne $null)
         {
-            #check Parameter
-            $ClusterResourceParam_now = Get-ClusterParameter -InputObject $ClusterResource
-            foreach ($param in $ClusterResourceParam)
-            {
-                $ClusterResource_param = $ClusterResourceParam_now | Where-Object {$_.Name -eq $param.Name}
-                if ($ClusterResource_param.Value -ne $param.Value)
-                {
-                    Set-ClusterParameter -InputObject $ClusterResource -Name $param.Name -Value $param.Value
-                }
-            }
-            
             #Check State
             if ($ClusterResource.State -ne $State) 
             {
@@ -124,10 +108,6 @@ function Set-TargetResource
                 Remove-ClusterResource -Name $Name -Force
                 #Create a new Resource in the target group
                 $ClusterResource = Add-ClusterResource -Name $Name -Group $ClusterGroupName -ResourceType $ClusterResourceType -Cluster $ClusterName
-                foreach ($param in $ClusterResourceParam)
-                {
-                    Set-ClusterParameter -Name $param.Name -value $param.Value -InputObject $ClusterResource
-                }
                 if ($State -eq "Online")
                 {
                     Start-ClusterResource -InputObject $ClusterResource
@@ -139,10 +119,6 @@ function Set-TargetResource
                 Remove-ClusterResource -Name $Name -Force
                 #Create a new Resource in the target group
                 $ClusterResource = Add-ClusterResource -Name $Name -Group $ClusterGroupName -ResourceType $ClusterResourceType -Cluster $ClusterName
-                foreach ($param in $ClusterResourceParam)
-                {
-                    Set-ClusterParameter -Name $param.Name -value $param.Value -InputObject $ClusterResource
-                }
                 if ($State -eq "Online")
                 {
                     Start-ClusterResource -InputObject $ClusterResource
@@ -154,10 +130,6 @@ function Set-TargetResource
             #Create a new Resource in the target group
             $ClusterResourceType = $ClusterResourceType
             $ClusterResource = Add-ClusterResource -Name $Name -Group $ClusterGroupName -ResourceType $ClusterResourceType -Cluster $ClusterName
-            foreach ($param in $ClusterResourceParam)
-            {
-                Set-ClusterParameter -Name $param.Name -value $param.Value -InputObject $ClusterResource
-            }
             if ($State -eq "Online")
             {
                 Start-ClusterResource -InputObject $ClusterResource
@@ -196,9 +168,7 @@ function Test-TargetResource
         
         [parameter(Mandatory)]
         [string]$ClusterResourceType,
-        
-        [Microsoft.Management.Infrastructure.CimInstance[]]$ClusterResourceParam,
-        
+                
         [string]$State = "Online",
         
         [string]$Ensure = "Present"
@@ -216,18 +186,6 @@ function Test-TargetResource
     
     if (($Ensure -eq "Present") -and ($ClusterResource -ne $null)) 
     {
-        #check Parameter
-        $ClusterResourceParam_now = Get-ClusterParameter -InputObject $ClusterResource
-        foreach ($param in $ClusterResourceParam)
-        {
-            $ClusterResource_param = $ClusterResourceParam_now | Where-Object {$_.Name -eq $param.Name}
-            if ($ClusterResource_param.Value -ne $param.Value)
-            {
-                $isDesiredState = $false
-                Write-Verbose -Message "The ClusterResourceParam for Cluster Resource `"$($Name)`" does not match the desired state. "
-            }
-        }
-        
         #Check State
         if ($ClusterResource.State -ne $State) 
         {
@@ -255,41 +213,4 @@ function Test-TargetResource
     }
     
     $isDesiredState
-}
-
-#functions for this Module
-# Convert Cluster Parameter to customized Class
-function ConvertTo-CimClusterParam
-{
-    <#
-    .SYNOPSIS
-        Converts Cluster Parameter elements to instances of the MSFT_xClusterParameter CIM class.
-    #>
-    [CmdletBinding()]
-    [OutputType([Microsoft.Management.Infrastructure.CimInstance])]
-    param
-    (
-        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
-        [AllowEmptyCollection()]
-        [AllowNull()]
-        [Object[]]
-        $InputObject
-    )
-    begin
-    {
-        $CimClassName = 'MSFT_xClusterParameter'
-        $CimNamespace = 'root/microsoft/Windows/DesiredStateConfiguration'
-    }
-    process
-    {
-        foreach ($ClusterParam in $InputObject)
-        {
-            [Hashtable]$CimProperties = @{
-                Name = [String]$ClusterParam.Name
-                Value = [String]$ClusterParam.Value
-            }
-
-            New-CimInstance -ClassName $CimClassName -Namespace $CimNamespace -Property $CimProperties -ClientOnly
-        }
-    }
 }
