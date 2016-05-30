@@ -73,7 +73,7 @@ function Set-TargetResource
         [parameter(Mandatory)]
         [string]$ClusterResourceType,
         
-        [string]$State = "Online",
+        [string]$State,
         
         [string]$Ensure = "Present"
     )
@@ -90,15 +90,18 @@ function Set-TargetResource
         if ($ClusterResource -ne $null)
         {
             #Check State
-            if ($ClusterResource.State -ne $State) 
+            if ($State -ne $null)
             {
-                if ($State -eq "Online") 
+                if ($ClusterResource.State -ne $State) 
                 {
-                    Start-ClusterResource -InputObject $ClusterResource
-                }
-                else 
-                {
-                    Stop-ClusterResource -InputObject $ClusterResource
+                    if ($State -eq "Online") 
+                    {
+                        Start-ClusterResource -InputObject $ClusterResource
+                    }
+                    else 
+                    {
+                        Stop-ClusterResource -InputObject $ClusterResource
+                    }
                 }
             }
             
@@ -169,7 +172,7 @@ function Test-TargetResource
         [parameter(Mandatory)]
         [string]$ClusterResourceType,
                 
-        [string]$State = "Online",
+        [string]$State,
         
         [string]$Ensure = "Present"
     )
@@ -187,11 +190,14 @@ function Test-TargetResource
     if (($Ensure -eq "Present") -and ($ClusterResource -ne $null)) 
     {
         #Check State
-        if ($ClusterResource.State -ne $State) 
+        if ($State -ne $null)
         {
-            $isDesiredState = $false
-            Write-Verbose -Message "The State for Cluster Resource `"$($Name)`" does not match the desired state. "
-        }
+            if ($ClusterResource.State -ne $State) 
+            {
+                $isDesiredState = $false
+                Write-Verbose -Message "The State for Cluster Resource `"$($Name)`" does not match the desired state. "
+            }
+        }        
         
         if ($ClusterResource.ResourceType.Name -ne $ClusterResourceType) 
         {
