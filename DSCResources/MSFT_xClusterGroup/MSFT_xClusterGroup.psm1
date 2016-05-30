@@ -43,7 +43,7 @@ function Get-TargetResource
             $ClusterValid = $true
         }
     }
-    While ($ClusterValid -or ($failedcount -eq 3))
+    While (-not ($ClusterValid -or ($failedcount -eq 3)))
 
     if ($failedcount -eq 3)
     {
@@ -116,7 +116,7 @@ function Set-TargetResource
             $ClusterValid = $true
         }
     }
-    While ($ClusterValid -or ($failedcount -eq 3))
+    While (-not ($ClusterValid -or ($failedcount -eq 3)))
 
     if ($failedcount -eq 3)
     {
@@ -201,7 +201,7 @@ function Test-TargetResource
             $ClusterValid = $true
         }
     }
-    While ($ClusterValid -or ($failedcount -eq 3))
+    While (-not ($ClusterValid -or ($failedcount -eq 3)))
 
     if ($failedcount -eq 3)
     {
