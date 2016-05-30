@@ -25,6 +25,31 @@ function Get-TargetResource
     {
         Import-Module -Name FailoverClusters
     }
+    #Flush DNS to make sure the updated Cluster Name is able to be contacted
+    Clear-DnsClientCache -Verbose
+
+    $failedcount = 0
+    $ClusterValid = $false
+    Do
+    {
+        $Cluster = Get-Cluster -Name $ClusterName -ErrorAction SilentlyContinue
+        if ($Cluster -eq $null)
+        {
+            $failedcount += 1
+            Start-Sleep -Seconds 5
+        }
+        else
+        {
+            $ClusterValid = $true
+        }
+    }
+    While ($ClusterValid -or ($failedcount -eq 3))
+
+    if ($failedcount -eq 3)
+    {
+        Write-Verbose -Message "Tried to get Cluster $ClusterName 3 times, but didn't get anything, exit now..."
+        exit 1;
+    }
     
     $ClusterGroup = Get-ClusterGroup -Name $Name -Cluster $ClusterName -ErrorAction SilentlyContinue
     if ($null -ne $ClusterGroup) 
@@ -72,6 +97,31 @@ function Set-TargetResource
     if ((Get-Module -Name FailoverClusters) -eq $null)
     {
         Import-Module -Name FailoverClusters
+    }
+    #Flush DNS to make sure the updated Cluster Name is able to be contacted
+    Clear-DnsClientCache -Verbose
+
+    $failedcount = 0
+    $ClusterValid = $false
+    Do
+    {
+        $Cluster = Get-Cluster -Name $ClusterName -ErrorAction SilentlyContinue
+        if ($Cluster -eq $null)
+        {
+            $failedcount += 1
+            Start-Sleep -Seconds 5
+        }
+        else
+        {
+            $ClusterValid = $true
+        }
+    }
+    While ($ClusterValid -or ($failedcount -eq 3))
+
+    if ($failedcount -eq 3)
+    {
+        Write-Verbose -Message "Tried to get Cluster $ClusterName 3 times, but didn't get anything, exit now..."
+        exit 1;
     }
     
     $ClusterGroup = Get-ClusterGroup -Name $Name -Cluster $ClusterName -ErrorAction SilentlyContinue
@@ -132,6 +182,31 @@ function Test-TargetResource
     if ((Get-Module -Name FailoverClusters) -eq $null)
     {
         Import-Module -Name FailoverClusters
+    }
+    #Flush DNS to make sure the updated Cluster Name is able to be contacted
+    Clear-DnsClientCache -Verbose
+
+    $failedcount = 0
+    $ClusterValid = $false
+    Do
+    {
+        $Cluster = Get-Cluster -Name $ClusterName -ErrorAction SilentlyContinue
+        if ($Cluster -eq $null)
+        {
+            $failedcount += 1
+            Start-Sleep -Seconds 5
+        }
+        else
+        {
+            $ClusterValid = $true
+        }
+    }
+    While ($ClusterValid -or ($failedcount -eq 3))
+
+    if ($failedcount -eq 3)
+    {
+        Write-Verbose -Message "Tried to get Cluster $ClusterName 3 times, but didn't get anything, exit now..."
+        exit 1;
     }
     
     $ClusterGroup = Get-ClusterGroup -Name $Name -Cluster $ClusterName -ErrorAction SilentlyContinue
