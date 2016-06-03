@@ -48,9 +48,35 @@ For more information about cluster preferred owners please see: http://support.m
 * **RetryCount**: Maximum number of retries to check for cluster existance
 * **Credential**: Credential used to join or leave domain
 
+### xClusterGroup (Beta)
+* **Name**: Name of the Cluster group (Cluster Role)
+* **ClusterName**: Cluster Name
+* **GroupType**: The type of the Cluster Group(Role), check all the options in the mof file
+* **Ensure**:  Whether this group should be present or removed
+
+### xClusterResource (Beta)
+* **Name**: Name of the Cluster Resource
+* **ClusterName**: Name of the Cluster Group(Role)
+* **ClusterGroupName**: Cluster Name
+* **ClusterResourceType**: The type of the Cluster Resource, check all options in the mof file
+* **Ensure**: Whether this resource should be present or removed
+* **State**: Define the resource state should be online or offline
+
+### xClusterParameter (Beta)
+Setup Cluster Resource' properties
+* **ClusterName**: Cluster Name
+* **ClusterResourceName**: Cluster resource name
+* **Name**: The name of the Parameter
+* **Value**: The value for the key-value-pair based on the name
+
 ## Versions
 
 ### Unreleased
+
+### 1.3.1.0
+* Added xClusterGroup
+* Added xClusterResource
+* Added xClusterParameter
 
 ### 1.3.0.0
 
