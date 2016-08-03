@@ -20,7 +20,9 @@ function Get-TargetResource
         [string]$ClusterGroupName,
         
         [parameter(Mandatory)]
-        [string]$ClusterResourceType
+        [string]$ClusterResourceType, 
+
+        [Microsoft.Management.Infrastructure.CimInstance[]]$ClusterResourceParameters
     )
     
     #Make sure Failover Cluster Module is imported
@@ -32,6 +34,16 @@ function Get-TargetResource
     $ClusterResource = Get-ClusterResource -Name $Name -Cluster $ClusterName -ErrorAction SilentlyContinue
     if ($null -ne $ClusterResource)
     {
+        $resourceparams = @()
+        foreach ($instance in $ClusterResourceParameters)
+        {
+            Write-Verbose ('Key: {0}, Value: {1}' -f $instance.Key, $instance.Value)
+            $param = New-CimInstance -ClassName MSFT_KeyValuePair -Namespace root/microsoft/Windows/DesiredStateConfiguration -Property @{
+                Key = $instance.Key
+                Value = $instance.Value
+            } -ClientOnly
+            $resourceparams += $param
+        }
         $ReturnValue = @{
             Name = $ClusterResource.Name
             ClusterName = $ClusterResource.Cluster.Name
@@ -39,6 +51,7 @@ function Get-TargetResource
             ClusterResourceType = $ClusterResource.ResourceType.Name
             Ensure = 'Present'
             State = $ClusterResource.State
+            ClusterResourceParameters = $resourceparams
         }
     }
     else 
@@ -73,9 +86,11 @@ function Set-TargetResource
         [parameter(Mandatory)]
         [string]$ClusterResourceType,
         
-        [string]$State,
+        [string]$State = "Online",
         
-        [string]$Ensure = "Present"
+        [string]$Ensure = "Present",
+
+        [Microsoft.Management.Infrastructure.CimInstance[]]$ClusterResourceParameters
     )
     
     #Make sure Failover Cluster Module is imported
@@ -89,6 +104,15 @@ function Set-TargetResource
     {
         if ($ClusterResource -ne $null)
         {
+            #Check Parameters
+            foreach ($ClusterResourceParameter in $ClusterResourceParameters)
+            {
+                $ClusterResourceParam = Get-ClusterParameter -Name $ClusterResourceParameter.Key -InputObject $ClusterResource -Cluster $ClusterName -ErrorAction SilentlyContinue
+                if ($ClusterResourceParam.Value -ne $ClusterResourceParameter.Value)
+                {
+                    Set-ClusterParameter -InputObject $ClusterResource -Name $ClusterResourceParameter.Key -Value $ClusterResourceParameter.Value
+                }
+            }
             #Check State
             if ($State -ne $null)
             {
@@ -111,6 +135,10 @@ function Set-TargetResource
                 Remove-ClusterResource -Name $Name -Force
                 #Create a new Resource in the target group
                 $ClusterResource = Add-ClusterResource -Name $Name -Group $ClusterGroupName -ResourceType $ClusterResourceType -Cluster $ClusterName
+                foreach ($ClusterResourceParameter in $ClusterResourceParameters)
+                {
+                    Set-ClusterParameter -InputObject $ClusterResource -Name $ClusterResourceParameter.Key -Value $ClusterResourceParameter.Value
+                }
                 if ($State -eq "Online")
                 {
                     Start-ClusterResource -InputObject $ClusterResource
@@ -122,6 +150,10 @@ function Set-TargetResource
                 Remove-ClusterResource -Name $Name -Force
                 #Create a new Resource in the target group
                 $ClusterResource = Add-ClusterResource -Name $Name -Group $ClusterGroupName -ResourceType $ClusterResourceType -Cluster $ClusterName
+                foreach ($ClusterResourceParameter in $ClusterResourceParameters)
+                {
+                    Set-ClusterParameter -InputObject $ClusterResource -Name $ClusterResourceParameter.Key -Value $ClusterResourceParameter.Value
+                }
                 if ($State -eq "Online")
                 {
                     Start-ClusterResource -InputObject $ClusterResource
@@ -133,6 +165,10 @@ function Set-TargetResource
             #Create a new Resource in the target group
             $ClusterResourceType = $ClusterResourceType
             $ClusterResource = Add-ClusterResource -Name $Name -Group $ClusterGroupName -ResourceType $ClusterResourceType -Cluster $ClusterName
+            foreach ($ClusterResourceParameter in $ClusterResourceParameters)
+            {
+                Set-ClusterParameter -InputObject $ClusterResource -Name $ClusterResourceParameter.Key -Value $ClusterResourceParameter.Value
+            }
             if ($State -eq "Online")
             {
                 Start-ClusterResource -InputObject $ClusterResource
@@ -174,7 +210,9 @@ function Test-TargetResource
                 
         [string]$State,
         
-        [string]$Ensure = "Present"
+        [string]$Ensure = "Present",
+
+        [Microsoft.Management.Infrastructure.CimInstance[]]$ClusterResourceParameters
     )
     
     #Make sure Failover Cluster Module is imported
@@ -209,6 +247,16 @@ function Test-TargetResource
         {
             $isDesiredState = $false
             Write-Verbose -Message "The ClusterGroupName for Cluster Resource `"$($Name)`" does not match the desired state. "
+        }
+
+        foreach ($ClusterResourceParameter in $ClusterResourceParameters)
+        {
+            $ClusterResourceParam = Get-ClusterParameter -Name $ClusterResourceParameter.Key -InputObject $ClusterResource -Cluster $ClusterName -ErrorAction SilentlyContinue
+            if ($ClusterResourceParam.Value -ne $ClusterResourceParameter.Value)
+            {
+                $isDesiredState = $false
+                Write-Verbose -Message "The ClusterResourceParameter `"$($ClusterResourceParameter.Key)`" for Cluster Resource `"$($Name)`" does not match the desired state. "
+            }
         }
     }
     
