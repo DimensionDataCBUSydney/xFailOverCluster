@@ -1,8 +1,0 @@
-[ClassVersion("1.0.0.0"), FriendlyName("xClusterParameter")]
-class MSFT_xClusterParameter : OMI_BaseResource
-{
-    [Key] string ClusterName;
-    [Key] string ClusterResourceName;
-    [Key] string Name;
-    [Write] string Value;
-};

@@ -61,17 +61,26 @@ For more information about cluster preferred owners please see: http://support.m
 * **ClusterResourceType**: The type of the Cluster Resource, check all options in the mof file
 * **Ensure**: Whether this resource should be present or removed
 * **State**: Define the resource state should be online or offline
-
-### xClusterParameter (Beta)
-Setup Cluster Resource' properties
-* **ClusterName**: Cluster Name
-* **ClusterResourceName**: Cluster resource name
-* **Name**: The name of the Parameter
-* **Value**: The value for the key-value-pair based on the name
+* **ClusterResourceParameters**: Define the parameters for this resource
 
 ## Versions
 
 ### Unreleased
+
+### 1.3.2.0
+* Added ClusterResourceParameters in ClusterResource as hashtable
+* Updated the Example for new resource property
+Example:
+Invoke-DscResource -Name xClusterResource -ModuleName xFailOverCluster -Method Set -Property @{
+    Name = "Ape_svc_Resource";
+    ClusterName = "Cluster_test";
+    ClusterGroupName = "ape Cluster Role";
+    ClusterResourceType = "Generic Service";
+    ClusterResourceParameters = @{
+        'ServiceName'         = 'AeLookupSvc'
+        'StartupParameters' = '-k netsvcs'
+        }
+} -Verbose
 
 ### 1.3.1.0
 * Added xClusterGroup

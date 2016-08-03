@@ -27,18 +27,10 @@ Configuration PrimaryClusterNode
             ClusterGroupName = "ape Cluster Role"
             ClusterResourceType = "Generic Service"
             State = "Online"
-            ClusterResourceParam = @(
-                MSFT_xClusterParameter
-                {
-                    Name = "ServiceName"
-                    Value = "AeLookupSvc"
-                }
-                MSFT_xClusterParameter
-                {
-                    Name = "StartupParameters"
-                    Value = "-k netsvcs"
-                }
-            )
+            ClusterResourceParameters = @{
+                'ServiceName'         = 'AeLookupSvc'
+                'StartupParameters' = '-k netsvcs'
+            }
         }
     }
 }
@@ -58,4 +50,6 @@ PrimaryClusterNode -domainAdminCred $Cred -ConfigurationData $cd -OutputPath C:\
 Start-DscConfiguration -Path C:\tmp\PrimaryClusterNode -Force -Wait -Verbose
 
 
+#Clean up
+#Get-ClusterGroup -Name 'ape Cluster Role' | Remove-ClusterGroup -RemoveResources -Force -Confirm: $false
 #Get-Cluster | Remove-Cluster -CleanupAD -Force
